@@ -9,7 +9,7 @@
             <button @click="$emit('remove', product.id)"
                 class="border-2 border-black bg-white px-2 py-1 text-xs font-extrabold uppercase cursor-pointer hover:bg-brand hover:text-white">Remove</button>
         </div>
-    </li>
+    </li>  
 </template>
 <script>
 export default {

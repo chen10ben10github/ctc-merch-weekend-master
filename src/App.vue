@@ -5,7 +5,7 @@
     <main id="top">
       <HeroSection />
       <FilterBar />
-      <ProductSection :products="products" @add-to-cart="addToCart" />
+      <ProductSection @add="addToCart" />
       <CartSection @remove-product="removeProduct" :carts="carts" />
       <PerkSection />
       <FAQSection />
@@ -15,16 +15,16 @@
   </div>
 </template>
 <script>
-import NavHeader from '@/components/NavHeader.vue';
-import HeroSection from '@/components/HeroSection.vue';
-import FilterBar from '@/components/FilterBar.vue';
-import ProductSection from '@/components/ProductSection.vue';
-import CartSection from '@/components/CartSection.vue';
-import PerkSection from '@/components/PerkSection.vue';
-import FAQSection from '@/components/FAQSection.vue';
-import NewsSletter from '@/components/NewsSletter.vue';
-import FooterSection from '@/components/FooterSection.vue';
-import AnnouncementBar from '@/components/AnnouncementBar.vue';
+import NavHeader from '@/component/NavHeader.vue';
+import HeroSection from '@/component/HeroSection.vue';
+import FilterBar from '@/component/FilterBar.vue';
+import ProductSection from '@/component/ProductSection.vue';
+import CartSection from '@/component/CartSection.vue';
+import PerkSection from '@/component/PerkSection.vue';
+import FAQSection from '@/component/FAQSection.vue';
+import NewsSletter from '@/component/NewsSletter.vue';
+import FooterSection from '@/component/FooterSection.vue';
+import AnnouncementBar from '@/component/AnnouncementBar.vue';
 export default {
   components: {
     NavHeader,
@@ -75,7 +75,6 @@ export default {
     },
     addToCart(product) {
       const existingProduct = this.carts.find((item) => item.id === product.id)
-      console.log(existingProduct)
       if (existingProduct) {
         existingProduct.quantity++
       } else {
