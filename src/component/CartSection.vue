@@ -8,19 +8,18 @@
         <div class="bg-white border-4 border-black shadow-brutal p-5">
             <ul class="space-y-3">
                 <!-- 6a. CART ROWS (3 copies) -->
-                <CartCard v-for="item in cart" :key="item.id" :product="item" @remove="$emit('remove', $event)" />
+                <CartCard v-for="(item, index) in carts" :key="index" :product="item" @remove="removeProduct" />
             </ul>
 
             <!-- 6b. EMPTY CART (hidden now — show it when the cart has no rows) -->
-            <p v-if="cart.length === 0" class="border-2 border-black bg-paper p-4 text-center font-extrabold uppercase">
-                Your cart is empty.
+            <p class="hidden border-2 border-black bg-paper p-4 text-center font-extrabold uppercase">Your cart is
+                empty.
             </p>
 
-            <div v-if="cart.length > 0" class="mt-5 pt-5 border-t-4 border-black flex flex-wrap items-center justify-between gap-4">
-                <p class="text-2xl font-black uppercase">Total: ${{ total.toFixed(2) }}</p>
+            <div class="mt-5 pt-5 border-t-4 border-black flex flex-wrap items-center justify-between gap-4">
+                <p class="text-2xl font-black uppercase">Total: ${{ cartTotal.toFixed(2) }}</p>
                 <div class="flex gap-3">
-                    <button
-                        @click="$emit('clear')"
+                    <button @click="$emit('clear')"
                         class="border-2 border-black bg-white px-4 py-2 text-sm font-extrabold uppercase cursor-pointer">Clear</button>
                     <button
                         class="border-2 border-black bg-brand text-white shadow-brutal-sm px-4 py-2 text-sm font-extrabold uppercase cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none">Checkout</button>
@@ -33,19 +32,40 @@
 import CartCard from '@/component/carts/CartCard.vue';
 export default {
     components: { CartCard },
-    props: {
-        cart: {
-            type: Array,
-            required: true
+    emits: ['removeProduct', 'clear'],
+    data() {
+        return {
+            count: 0
         }
     },
-    emits: ['remove', 'clear'],
+    beforeCreate() { console.log("Logger: beforeCreate. count =", this.count); },
+    created() { console.log("Logger: created. count =", this.count); },
+    beforeMount() { console.log("Logger: beforeMount"); },
+    mounted() { console.log("Logger: mounted", this.$el); },
+    beforeUpdate() { console.log("Logger: beforeUpdate"); },
+    updated() { console.log("Logger: updated"); },
+    beforeUnmount() { console.log("Logger: beforeUnmount"); },
+    unmounted() { console.log("Logger: unmounted"); },
+    props: {
+        carts: {
+            type: Array, required: true
+        }
+    },
     computed: {
         cartCount() {
-            return this.cart.reduce((count, item) => count + item.quantity, 0)
+            return this.carts.reduce((sum, item) => {
+                return sum + item.quantity
+            }, 0)
         },
-        total() {
-            return this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        cartTotal() {
+            return this.carts.reduce((sum, item) => {
+                return sum + item.quantity * item.price
+            }, 0)
+        }
+    },
+    methods: {
+        removeProduct(id) {
+            this.$emit('removeProduct', id)
         }
     }
 }
