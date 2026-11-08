@@ -22,6 +22,5 @@
             </div>
         </div>
 
-        <p class="mt-4 text-sm font-bold uppercase">Showing 8 of 12 products</p>
     </section>
 </template>
