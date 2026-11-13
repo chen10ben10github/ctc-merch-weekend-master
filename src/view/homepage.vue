@@ -1,12 +1,11 @@
 <template>
   <div class="min-h-screen bg-paper text-black font-sans">
-    <AnnouncementBar />
     <NavHeader :cart-count="cartCount" />
     <main id="top">
       <HeroSection />
-      <FilterBar />
-      <ProductSection @add="addToCart" />
-      <CartSection @remove-product="removeProduct" :carts="carts" />
+      <FilterBar @category-change="selectedCategory = $event" @search-change="searchQuery = $event" />
+      <ProductSection :category="selectedCategory" :search-query="searchQuery" @add="addToCart" />
+      <CartSection :carts="carts" @remove-product="removeProduct" @clear="clearCart" @checkout="checkout" />
       <PerkSection />
       <FAQSection />
       <NewsSletter />
@@ -24,7 +23,6 @@ import PerkSection from '@/component/PerkSection.vue';
 import FAQSection from '@/component/FAQSection.vue';
 import NewsSletter from '@/component/NewsSletter.vue';
 import FooterSection from '@/component/FooterSection.vue';
-import AnnouncementBar from '@/component/AnnouncementBar.vue';
 export default {
   name: 'HomePage',
   components: {
@@ -36,11 +34,12 @@ export default {
     PerkSection,
     FAQSection,
     NewsSletter,
-    FooterSection,
-    AnnouncementBar
+    FooterSection
   },
   data() {
     return {
+      selectedCategory: 'All',
+      searchQuery: '',
       products: [
         { "id": 1, "name": "Semicolon Sticker Pack", "category": "Stickers", "price": 4.0, "oldPrice": null, "soldOut": false, "description": "10 vinyl stickers for your laptop." },
         { "id": 2, "name": "Bug Hunter Hoodie", "category": "Apparel", "price": 45.0, "oldPrice": 60.0, "soldOut": false, "description": "Heavy cotton. Warm for late-night fixes." },
@@ -73,6 +72,18 @@ export default {
     removeProduct(id) {
       this.carts = this.carts.filter((item) => item.id !== id)
       this.$emit('cartUpdated', this.cartCount)
+    },
+    clearCart() {
+      this.carts = []
+    },
+    checkout() {
+      if (this.carts.length === 0) {
+        return
+      }
+
+      const total = this.carts.reduce((sum, item) => sum + item.quantity * item.price, 0)
+      window.alert(`Demo checkout complete. No payment was processed. Total: $${total.toFixed(2)}`)
+      this.clearCart()
     },
     addToCart(product) {
       const existingProduct = this.carts.find((item) => item.id === product.id)

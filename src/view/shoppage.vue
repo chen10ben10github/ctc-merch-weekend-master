@@ -1,18 +1,16 @@
 <template>
   <div class="min-h-screen bg-paper text-black font-sans">
-    <AnnouncementBar />
     <NavHeader :cart-count="cartCount" />
     <main id="products" class="max-w-6xl mx-auto px-6 py-10">
       <h1 class="mb-6 text-4xl font-black uppercase">Shop</h1>
       <ProductSection @add="addToCart" />
-      <CartSection :carts="carts" @remove-product="removeProduct" />
+      <CartSection :carts="carts" @remove-product="removeProduct" @clear="clearCart" @checkout="checkout" />
     </main>
     <FooterSection />
   </div>
 </template>
 
 <script>
-import AnnouncementBar from '@/component/AnnouncementBar.vue'
 import CartSection from '@/component/CartSection.vue'
 import FooterSection from '@/component/FooterSection.vue'
 import NavHeader from '@/component/NavHeader.vue'
@@ -21,7 +19,6 @@ import ProductSection from '@/component/ProductSection.vue'
 export default {
   name: 'ShopPage',
   components: {
-    AnnouncementBar,
     CartSection,
     FooterSection,
     NavHeader,
@@ -53,6 +50,18 @@ export default {
     },
     removeProduct(id) {
       this.carts = this.carts.filter((item) => item.id !== id)
+    },
+    clearCart() {
+      this.carts = []
+    },
+    checkout() {
+      if (this.carts.length === 0) {
+        return
+      }
+
+      const total = this.carts.reduce((sum, item) => sum + item.quantity * item.price, 0)
+      window.alert(`Demo checkout complete. No payment was processed. Total: $${total.toFixed(2)}`)
+      this.clearCart()
     },
   },
 }

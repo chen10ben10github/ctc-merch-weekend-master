@@ -1,10 +1,7 @@
 <template>
     <section class="max-w-6xl mx-auto px-6 py-6">
-        <p v-if="meta.total" class="mb-4 text-sm font-bold uppercase" aria-live="polite">
-            Showing {{ firstItem }}–{{ lastItem }} of {{ meta.total }} products
-        </p>
         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <ProductCard v-for="(item, index) in products" :key="item.id" :product="item" @add="addToCart" />
+            <ProductCard v-for="item in filteredProducts" :key="item.id" :product="item" @add="addToCart" />
         </div>
         <p v-if="loading" class="mt-6 text-center font-extrabold uppercase" role="status">
             Loading products...
@@ -12,7 +9,7 @@
         <p v-else-if="error" class="mt-6 border-4 border-black bg-white p-6 text-center font-extrabold" role="alert">
             Could not load products: {{ error }}
         </p>
-        <p v-else-if="products.length === 0" class="mt-6 bg-white border-4 border-black shadow-brutal p-6 text-center font-extrabold uppercase">
+        <p v-else-if="filteredProducts.length === 0" class="mt-6 bg-white border-4 border-black shadow-brutal p-6 text-center font-extrabold uppercase">
             No products match your search.
         </p>
         <nav v-if="meta.totalPages > 1" class="mt-8 flex flex-wrap items-center justify-center gap-4" aria-label="Product pages">
@@ -45,6 +42,16 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://brutal-api-sa
 
 export default {
     components: { ProductCard },
+    props: {
+        category: {
+            type: String,
+            default: 'All'
+        },
+        searchQuery: {
+            type: String,
+            default: ''
+        }
+    },
     data() {
         return {
             products: [],
@@ -55,19 +62,30 @@ export default {
                 totalPages: 1
             },
             loading: false,
-            error: ''
+            error: '',
+            requestId: 0
         }
-    },
-    computed: {
-        firstItem() {
-            return this.products.length ? (this.meta.page - 1) * this.meta.limit + 1 : 0
-        },
-        lastItem() {
-            return (this.meta.page - 1) * this.meta.limit + this.products.length
-        },
     },
     created() {
         this.fetchProducts()
+    },
+    computed: {
+        filteredProducts() {
+            const query = this.searchQuery.trim().toLowerCase()
+            if (!query) {
+                return this.products
+            }
+
+            return this.products.filter((product) =>
+                [product.name, product.description, product.category]
+                    .some((value) => typeof value === 'string' && value.toLowerCase().includes(query))
+            )
+        }
+    },
+    watch: {
+        category() {
+            this.fetchProducts(1)
+        }
     },
     emits: ['add'],
     methods: {
@@ -82,12 +100,14 @@ export default {
             await this.fetchProducts(page)
         },
         async fetchProducts(page = 1) {
+            const requestId = ++this.requestId
             this.loading = true
             this.error = ''
 
             try {
                 const response = await fetch(
-                    `${API_BASE_URL}/products?category=All&page=${page}&limit=${this.meta.limit}`
+                    //Configure 
+                    `${API_BASE_URL}/products?category=${encodeURIComponent(this.category)}&page=${page}&limit=${this.meta.limit}`
                 )
                 if (!response.ok) {
                     throw new Error(`Request failed (${response.status})`)
@@ -98,13 +118,19 @@ export default {
                     throw new Error('The product response was invalid.')
                 }
 
-                this.products = result.data
-                this.meta = result.meta
+                if (requestId === this.requestId) {
+                    this.products = result.data
+                    this.meta = result.meta
+                }
             } catch (err) {
-                console.error('Could not load products.', err)
-                this.error = err instanceof Error ? err.message : 'An unexpected error occurred.'
+                if (requestId === this.requestId) {
+                    console.error('Could not load products.', err)
+                    this.error = err instanceof Error ? err.message : 'An unexpected error occurred.'
+                }
             } finally {
-                this.loading = false
+                if (requestId === this.requestId) {
+                    this.loading = false
+                }
             }
         }
     }
